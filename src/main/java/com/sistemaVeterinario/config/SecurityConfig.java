@@ -22,13 +22,10 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(authorizeRequests ->
                         authorizeRequests
-                                .requestMatchers("/","/about-us","/register","/login","/css/**","/js/**"
-                                        ,"/assets/**", "/webjars/**", "/error/**").permitAll()
+                                .requestMatchers("/public","/css/**","/js/**"
+                                        ,"/assets/**", "/webjars/**", "/error").permitAll()
                                 .requestMatchers("/admin/**").hasRole("ADMIN")
-                                .requestMatchers("/veterinarios/**").hasRole("ADMIN")
-                                .requestMatchers("/servicios/admin/**").hasRole("ADMIN")
-                                .requestMatchers("/user/**").hasRole("USER")
-                                .requestMatchers("/agendar/**").hasAnyRole("ADMIN", "USER")
+                                .requestMatchers("/mascotas", "/citas").hasAnyRole("USER","ADMIN")
                                 .anyRequest().authenticated()
                 )
                 .formLogin(formLogin ->
@@ -62,7 +59,7 @@ public class SecurityConfig {
                     redirectUrl = "/admin";
                     break;
                 } else if (authority.getAuthority().equals("ROLE_USER")) {
-                    redirectUrl = "/user";
+                    redirectUrl = "/user"; //el endpoint de la vista que quiero mostrar incialmente cuando accede un usuario con rol USER
                     break;
                 }
             }
@@ -71,8 +68,8 @@ public class SecurityConfig {
     }
     @Bean
     public AccessDeniedHandler deniedHandler() {
-        return (request, response, auth) -> {
-            response.sendRedirect("/error/403");
+        return (request, response, accessDeniedException) -> {
+            request.getRequestDispatcher("/error/403").forward(request, response);
         };
     }
     @Bean
